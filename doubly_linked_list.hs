@@ -134,6 +134,17 @@ instance Show a => Show (DoublyLinkedList a)
         left_show Nil s = "[" ++ s
         left_show (DLL l x r) s = left_show l ("(" ++ (show x) ++ ")." ++ s)
 
+elem' :: forall a. (Eq a) => a -> DoublyLinkedList a -> Bool
+elem' q Nil = False
+elem' q (DLL l x r) = left_elem q l (q == x || right_elem q r)
+  where
+    right_elem :: a -> DoublyLinkedList a -> Bool
+    right_elem q Nil = False
+    right_elem q (DLL l x r) = q == x || right_elem q r
+    left_elem :: a -> DoublyLinkedList a -> Bool -> Bool
+    left_elem q Nil acc = acc
+    left_elem q (DLL l x r) acc = left_elem q l (q == x || acc)
+
 repeat' :: Integer -> (a -> a) -> (a -> a)
 repeat' 0 f x = x
 repeat' n f x = repeat' (n - 1) f (f x)
