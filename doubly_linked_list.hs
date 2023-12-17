@@ -110,40 +110,30 @@ from_list' :: [a] -> DoublyLinkedList a
 from_list' [] = Nil
 from_list' (x:xs) = append_left x (from_list' xs)
 
-to_list :: DoublyLinkedList a -> [a]
-to_list Nil = []
-to_list (DLL l x r) = left_to_list l (x:(right_to_list r))
+fold' :: forall a b. (a -> b -> b) -> (a -> b -> b) -> (a -> b -> b) -> (b -> b) -> b -> b -> DoublyLinkedList a -> b
+fold' left_f mid_f right_f left_default mid_default right_default t = fold_inner t
   where
-    right_to_list :: DoublyLinkedList a -> [a]
-    right_to_list Nil = [] 
-    right_to_list (DLL l x r) = x:(right_to_list r)
-    left_to_list :: DoublyLinkedList a -> [a] -> [a]
-    left_to_list Nil acc = acc
-    left_to_list (DLL l x r) acc = left_to_list l (x:acc)
+    fold_inner :: DoublyLinkedList a -> b
+    fold_inner Nil = mid_default
+    fold_inner (DLL l x r) = left_fold l (mid_f x (right_fold r))
+      where
+        right_fold :: DoublyLinkedList a -> b
+        right_fold Nil = right_default
+        right_fold (DLL l x r) = right_f x (right_fold r)
+        left_fold :: DoublyLinkedList a -> b -> b
+        left_fold Nil acc = (left_default acc)
+        left_fold (DLL l x r) acc = left_fold l (left_f x acc)
+
+to_list :: DoublyLinkedList a -> [a]
+to_list = fold' (:) (:) (:) id [] []
 
 instance Show a => Show (DoublyLinkedList a)
   where
     show :: DoublyLinkedList a -> String
-    show Nil = "[]"
-    show (DLL l x r) = left_show l ("(" ++ (show x) ++ ")" ++ (right_show r))
-      where
-        right_show :: DoublyLinkedList a -> String
-        right_show Nil = "]"
-        right_show (DLL l x r) = ".(" ++ (show x) ++ ")" ++ (right_show r)
-        left_show :: DoublyLinkedList a -> String -> String
-        left_show Nil s = "[" ++ s
-        left_show (DLL l x r) s = left_show l ("(" ++ (show x) ++ ")." ++ s)
+    show = fold' (\x acc -> "(" ++ (show x) ++ ")." ++ acc) (\x acc -> "(" ++ (show x) ++ ")" ++ acc) (\x acc -> ".(" ++ (show x) ++ ")" ++ acc) (\acc -> "[" ++ acc) "[]" "]"
 
-elem' :: forall a. (Eq a) => a -> DoublyLinkedList a -> Bool
-elem' q Nil = False
-elem' q (DLL l x r) = left_elem q l (q == x || right_elem q r)
-  where
-    right_elem :: a -> DoublyLinkedList a -> Bool
-    right_elem q Nil = False
-    right_elem q (DLL l x r) = q == x || right_elem q r
-    left_elem :: a -> DoublyLinkedList a -> Bool -> Bool
-    left_elem q Nil acc = acc
-    left_elem q (DLL l x r) acc = left_elem q l (q == x || acc)
+elem' :: (Eq a) => a -> DoublyLinkedList a -> Bool
+elem' q = fold' (\x acc -> (q == x) || acc) (\x acc -> (q == x) || acc) (\x acc -> (q == x) || acc) id False False
 
 repeat' :: Integer -> (a -> a) -> (a -> a)
 repeat' 0 f x = x
