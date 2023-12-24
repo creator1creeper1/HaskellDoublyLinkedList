@@ -121,7 +121,7 @@ fold' left_f mid_f right_f left_default mid_default right_default t = fold_inner
         right_fold Nil = right_default
         right_fold (DLL l x r) = right_f x (right_fold r)
         left_fold :: DoublyLinkedList a -> b -> b
-        left_fold Nil acc = (left_default acc)
+        left_fold Nil acc = left_default acc
         left_fold (DLL l x r) acc = left_fold l (left_f x acc)
 
 to_list :: DoublyLinkedList a -> [a]
