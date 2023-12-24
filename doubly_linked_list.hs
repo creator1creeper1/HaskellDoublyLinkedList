@@ -135,6 +135,9 @@ instance Show a => Show (DoublyLinkedList a)
 elem' :: (Eq a) => a -> DoublyLinkedList a -> Bool
 elem' q = fold' (\x acc -> (q == x) || acc) (\x acc -> (q == x) || acc) (\x acc -> (q == x) || acc) id False False
 
+id' :: DoublyLinkedList a -> DoublyLinkedList a
+id' = fold' (\x acc -> append_left x acc) (\x acc -> append_left x acc) (\x acc -> append_left x acc) id Nil Nil
+
 repeat' :: Integer -> (a -> a) -> (a -> a)
 repeat' 0 f x = x
 repeat' n f x = repeat' (n - 1) f (f x)
